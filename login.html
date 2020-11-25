@@ -3,15 +3,21 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="stylesheet.css" type="text/css">
+    <script src=https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js' type='text/JavaScript'></script>
+    <!-- trying to get the API flow working-->
+    <!--script src='C:\Users\evanrittenhouse\node_modules\axios\index.js' type='text/JavaScript'></script-->
     <head>
         <title>Shuffler Login</title>
     </head>
+
     <body>
         <div class='container'>
             <div class="row">
-                <div class="col-12 vertically-centered" style='text-align: center;'>
-                    <h1 style='color: #1DB954;'><b>Spotify Playlist Shuffler</b></h1>
-                    <a><button class='login-button' onclick="login()">Login</button></a>
+                <div class="col-12 vertically-centered" style="text-align: center;">
+                    <h1 style="color: #1DB954;"><b>Spotify Playlist Shuffler</b></h1>
+                    <form action="/login" method="post">
+                        <button class="login-button">Login</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -26,7 +32,18 @@
                     .then (function(response) {
                         console.log(response);
                     });
+
+                res.redirect(redirectResponse);
                 };
+
+            function testFunc () { 
+                console.log('test function is working')
+            }
+            function sendPostToLogin () {
+                axios = require('axios');
+                console.log('function sendPostToLogin')
+                axios.post('http://localhost:5000/login')
+            }
         </script>
         <!-- Bootstrap JavaScript -->
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
