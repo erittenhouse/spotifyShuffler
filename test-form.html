@@ -7,7 +7,7 @@
     <head>
         <title>Shuffler Login</title>
     </head>
-    <body>
+    <bod>
         <h1 id="test">test form . html</h1>
         <h1 id='test1'>this one isn't working</h1>
         <button onclick='printURL()'>change text</button>
@@ -25,6 +25,16 @@
                 fetch('https://api.spotify.com/v1/me')
                     .then(response => response.json())
                     .then(data => console.log(data));
+            };
+
+            function stripCode() {
+                var element = document.getElementById('test1');
+                element.innerHTML = window.location.search.split('=')[1];
+            };
+
+            // from https://www.youtube.com/watch?v=SbelQW2JaD - WATCH THIS VIDEO IN ITS ENTIRETY
+            function APIController() {
+                
             };
         </script>
         
