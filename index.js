@@ -28,7 +28,7 @@ var generateRandomString = function(length) {
 
 // main page
 app.get('/', (req, res) => {
-    res.sendFile('/index.html', options)
+    res.sendFile('/html_css/index.html', options)
 })
 
 // login page - triggered on click of button, redirects to spotify then goes to /shuffle (b/c /shuffle is the redirect URI)
