@@ -1,18 +1,16 @@
 const fetch = require('node-fetch');
-const urllib = require('url');
 const express = require('express');
-const app = express();
-const port = 5000;
-const bodyParser = require("body-parser");
 const { stringify } = require('querystring');
 
-const clientId = 'b817214b1ce74e28844cd890f5a050a3';
-const clientSecret = '6a74579918844fbbb727d9f56e4883a8';
-const encodedId = 'YjgxNzIxNGIxY2U3NGUyODg0NGNkODkwZjVhMDUwYTM=';
-const encodedSecret = 'NmE3NDU3OTkxODg0NGZiYmI3MjdkOWY1NmU0ODgzYTg=';
+const creds = require('./credentials.js')
+const clientId = creds.clientId;
+const clientSecret = creds.clientSecret;
 const redirectURI = 'http://localhost:5000/shuffle/';
 var options = { root: __dirname };
 
+const app = express();
+const port = 5000;
+const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(__dirname))
 
