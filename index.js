@@ -68,19 +68,29 @@ app.get('/shuffle', (req, res) => {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: stringify({
-                "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": redirectURI
+                'grant_type': 'authorization_code',
+                'code': code,
+                'redirect_uri': redirectURI
             })
         });
         let response = await request;
-        let token = await response.json();
+        let token = await response.json()
         console.log('Access_Token: ' + token.access_token);
         console.log('Expires in: ' + token.expires_in);
         return token;
     };
 
-    getAuthToken();
+    const mainFunction = async () => {
+        var test_token = await getAuthToken();
+        return test_token;
+    };
+
+    token = (async () => {
+        var intermediateToken = await mainFunction();
+        return intermediateToken;
+    })();
+
+    console.log(typeof token);
     res.send('test');
 });
 
