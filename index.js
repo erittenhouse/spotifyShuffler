@@ -60,8 +60,8 @@ app.get('/shuffle', (req, res) => {
     console.log('Code: ' + code);
     console.log('State: ' + state);
 
-    async function getAuthToken() { 
-        const request = fetch('https://accounts.spotify.com/api/token', {
+    const getAuthToken = async () => { 
+        const request = await fetch('https://accounts.spotify.com/api/token', {
             method: 'POST', 
             headers: { 
                 'Authorization': 'Basic ' + (new Buffer.from(clientId + ':' + clientSecret).toString('base64')),
@@ -73,25 +73,14 @@ app.get('/shuffle', (req, res) => {
                 'redirect_uri': redirectURI
             })
         });
+
         let response = await request;
-        let token = await response.json()
-        console.log('Access_Token: ' + token.access_token);
-        console.log('Expires in: ' + token.expires_in);
-        return token;
+        return response.json();
     };
 
-    const mainFunction = async () => {
-        var test_token = await getAuthToken();
-        return test_token;
-    };
+    var token = getAuthToken();
+    token.then( () => { console.log(token) })
 
-    token = (async () => {
-        var intermediateToken = await mainFunction();
-        return intermediateToken;
-    })();
-
-    console.log(typeof token);
-    res.send('test');
 });
 
 app.listen(port, () => {
