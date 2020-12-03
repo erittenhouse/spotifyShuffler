@@ -75,11 +75,17 @@ app.get('/shuffle', (req, res) => {
         });
 
         let response = await request;
-        return response.json();
+        console.log(response);
+        return response;
     };
 
-    var token = getAuthToken();
-    token.then( () => { console.log(token) })
+    var token = getAuthToken();  // returns response object
+    token.then( (response) => response.json() )  // returns response JSON - a Promise, in this case.
+        .then( responseJson => { console.log(responseJson.access_token) });  // prints response JSON. this line and line 
+                                                                             // 83 are the ONLY TWO VALID implementations
+                                                                             // w/ brackets: no parentheses/{} is invalid
+        //  lines 83 and 84 
+    
 
 });
 
