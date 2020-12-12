@@ -15,6 +15,10 @@ const { response } = require('express');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(__dirname))
 
+
+var playlists = [];  // array of playlists 
+
+
 // helper function to generate random string.
 var generateRandomString = function(length) { 
     var text = '';
@@ -27,10 +31,12 @@ var generateRandomString = function(length) {
     return text;
 };
 
+
 // main page
 app.get('/', (req, res) => {
     res.sendFile('/html_css/index.html', options)
 })
+
 
 // login page - triggered on click of button, redirects to spotify then goes to /shuffle (b/c /shuffle is the redirect URI)
 app.get('/login', (req, res) => {
@@ -51,13 +57,14 @@ app.get('/login', (req, res) => {
         }));
 });
 
+
 // main page. Has the shuffle button and sends the access token, etc. to spotify backend
 app.get('/shuffle', (req, res) => {
-    playlists = []
+    playlists = []  // list for containing user playlists
     var code = (req.query.code != null) ? req.query.code : null;  // if req.query.code is not null, code = req.query.code else null
     var state = (req.query.state != null) ? req.query.state : null;  // if req.query.state is not null, state = req.query.state else null
 
-    const getAuthToken = async () => { 
+    async function getAuthData () {   // function that returns spotify API authorization JSON data
         var accessReq = await fetch('https://accounts.spotify.com/api/token', {
             method: 'POST', 
             headers: { 
@@ -70,65 +77,77 @@ app.get('/shuffle', (req, res) => {
                 redirect_uri: redirectURI
             })
         });
-        var accessJson = accessReq.json();
+        var accessJson = await accessReq.json();
         return accessJson;
     };
 
-    var access = getAuthToken();  // returns Promise object
-    access.then( async (accessJson) => {
+    async function getUserData(accessData) { 
         tokens = {
-            'access_token': accessJson.access_token,
-            'refresh_token': accessJson.refresh_token,
-            'expires_in': accessJson.expires_in
-        }
-        console.log(tokens);
+            'access_token': accessData.access_token,
+            'refresh_token': accessData.refresh_token,
+            'expires_in': accessData.expires_in
+        };
 
-        var userIdReq = await fetch('https://api.spotify.com/v1/me', {
+        var userReq = await fetch('https://api.spotify.com/v1/me', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${tokens.access_token}`
             }
-        })
-        var userIdJson = userIdReq.json();
-        return [tokens, userIdJson]
-    } ).then ( async (tokensAndId) => {
-        access = tokensAndId[0].access_token
-        userId = tokensAndId[1] 
+        });
+        var userJson = await userReq.json();
+        return [userJson, tokens];
+    };
 
-        var playlistReq = await fetch('https://api.spotify.com/v1/me/playlists', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${access}`
-            }
-        }).then( playlistReq => playlistReq.json() )
-        .then( playlistJson => console.log(playlistJson) )  // playlists contained in playlistJson.items
+    // recursive function used to get playlists until the end of the user's list of playlists
+    async function getPlaylistData(userDataAndTokenList, offset) { 
+        userId = userDataAndTokenList[0].id
+        accessToken = userDataAndTokenList[1].access_token
 
-    } )
-    // token.then( (response) => console.log(response) )  // when Promise is resolved, return the JSON
-        /* .then( (responseJson) => [responseJson.access_token, responseJson.refresh_token, responseJson.expires_in] )
-        .then( async (responseTokens) => { 
-            console.log('Access Token: ' + responseTokens[0])
-            console.log('Refresh Token: ' + responseTokens[1])
+        url = `https://api.spotify.com/v1/me/playlists?offset=${offset}`
+        console.log(`offset: ${offset}`);
+        console.log(url);
+        var playlistReq = await fetch(url, {
+            method: 'GET', 
+            headers: { 
+                'Authorization': `Bearer ${accessToken}`
+            },
+        });
+        
+        playlistJson = await playlistReq.json();
+        return playlistJson;
+    };
 
-            var idReq = await fetch('https://api.spotify.com/v1/me', {
-                method: 'GET', 
-                headers: {
-                    'Authorization': 'Bearer ' + responseTokens[0]
-                }
-            })
-         } );
-        .then( async (responseJson) => { 
-            console.log(responseJson);
-            const userData = await fetch('https://api.spotify.com/v1/me', {
-                method: 'GET', 
-                headers: {
-                    'Authorization': 'Bearer ' + responseJson.access_token
-                }
-            });
-            return userData;
-        }) 
-        .then( userData => console.log(userData.json()))*/
+    async function addToList(userDataAndTokenList, numPlaylistsSoFar) { 
+        var playlistJson = await getPlaylistData(userDataAndTokenList, numPlaylistsSoFar);
+        playlistItems = playlistJson.items;
+        for (i = 0; i < playlistItems.length; i++) {
+            playlists.push(playlistItems[i]);
+        };
+    };
+
+    async function main() { 
+        var accessData = await getAuthData();
+        var userDataAndTokenList = await getUserData(accessData);
+        var playlistJson = await getPlaylistData(userDataAndTokenList, 0);
+        console.log(playlistJson)
+
+        numPlaylists = playlistJson.total;
+        while (playlists.length < numPlaylists) {
+            console.log('Playlists length before add: ', playlists.length)
+            await addToList(userDataAndTokenList, playlists.length);
+            console.log('Playlists length after add: ', playlists.length)
+        };
+
+        for (i=0; i < playlists.length; i++) {  // sanity check for loop
+            console.log(playlists[i].name)
+        };
+        console.log('playlists length: ', playlists.length);
+    };
+
+    main()
+
 });
+
 
 app.listen(port, () => {
     console.log(`Server listening at ${port}...`)
