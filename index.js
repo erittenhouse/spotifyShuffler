@@ -60,91 +60,93 @@ app.get('/login', (req, res) => {
 
 // main page. Has the shuffle button and sends the access token, etc. to spotify backend
 app.get('/shuffle', (req, res) => {
-    playlists = []  // list for containing user playlists
-    var code = (req.query.code != null) ? req.query.code : null;  // if req.query.code is not null, code = req.query.code else null
-    var state = (req.query.state != null) ? req.query.state : null;  // if req.query.state is not null, state = req.query.state else null
+    // playlists = []  // list for containing user playlists
+    // var code = (req.query.code != null) ? req.query.code : null;  // if req.query.code is not null, code = req.query.code else null
+    // var state = (req.query.state != null) ? req.query.state : null;  // if req.query.state is not null, state = req.query.state else null
 
-    async function getAuthData () {   // function that returns spotify API authorization JSON data
-        var accessReq = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST', 
-            headers: { 
-                'Authorization': 'Basic ' + (new Buffer.from(clientId + ':' + clientSecret).toString('base64')),
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: stringify({
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: redirectURI
-            })
-        });
-        var accessJson = await accessReq.json();
-        return accessJson;
-    };
+    // async function getAuthData () {   // function that returns spotify API authorization JSON data
+    //     var accessReq = await fetch('https://accounts.spotify.com/api/token', {
+    //         method: 'POST', 
+    //         headers: { 
+    //             'Authorization': 'Basic ' + (new Buffer.from(clientId + ':' + clientSecret).toString('base64')),
+    //             'Content-Type': 'application/x-www-form-urlencoded'
+    //         },
+    //         body: stringify({
+    //             grant_type: 'authorization_code',
+    //             code: code,
+    //             redirect_uri: redirectURI
+    //         })
+    //     });
+    //     var accessJson = await accessReq.json();
+    //     return accessJson;
+    // };
 
-    async function getUserData(accessData) { 
-        tokens = {
-            'access_token': accessData.access_token,
-            'refresh_token': accessData.refresh_token,
-            'expires_in': accessData.expires_in
-        };
+    // async function getUserData(accessData) { 
+    //     tokens = {
+    //         'access_token': accessData.access_token,
+    //         'refresh_token': accessData.refresh_token,
+    //         'expires_in': accessData.expires_in
+    //     };
 
-        var userReq = await fetch('https://api.spotify.com/v1/me', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${tokens.access_token}`
-            }
-        });
-        var userJson = await userReq.json();
-        return [userJson, tokens];
-    };
+    //     var userReq = await fetch('https://api.spotify.com/v1/me', {
+    //         method: 'GET',
+    //         headers: {
+    //             'Authorization': `Bearer ${tokens.access_token}`
+    //         }
+    //     });
+    //     var userJson = await userReq.json();
+    //     return [userJson, tokens];
+    // };
 
-    // recursive function used to get playlists until the end of the user's list of playlists
-    async function getPlaylistData(userDataAndTokenList, offset) { 
-        userId = userDataAndTokenList[0].id
-        accessToken = userDataAndTokenList[1].access_token
+    // // recursive function used to get playlists until the end of the user's list of playlists
+    // async function getPlaylistData(userDataAndTokenList, offset) { 
+    //     userId = userDataAndTokenList[0].id
+    //     accessToken = userDataAndTokenList[1].access_token
 
-        url = `https://api.spotify.com/v1/me/playlists?offset=${offset}`
-        console.log(`offset: ${offset}`);
-        console.log(url);
-        var playlistReq = await fetch(url, {
-            method: 'GET', 
-            headers: { 
-                'Authorization': `Bearer ${accessToken}`
-            },
-        });
+    //     url = `https://api.spotify.com/v1/me/playlists?offset=${offset}`
+    //     console.log(`offset: ${offset}`);
+    //     console.log(url);
+    //     var playlistReq = await fetch(url, {
+    //         method: 'GET', 
+    //         headers: { 
+    //             'Authorization': `Bearer ${accessToken}`
+    //         },
+    //     });
         
-        playlistJson = await playlistReq.json();
-        return playlistJson;
-    };
+    //     playlistJson = await playlistReq.json();
+    //     return playlistJson;
+    // };
 
-    async function addToList(userDataAndTokenList, numPlaylistsSoFar) { 
-        var playlistJson = await getPlaylistData(userDataAndTokenList, numPlaylistsSoFar);
-        playlistItems = playlistJson.items;
-        for (i = 0; i < playlistItems.length; i++) {
-            playlists.push(playlistItems[i]);
-        };
-    };
+    // async function addToList(userDataAndTokenList, numPlaylistsSoFar) { 
+    //     var playlistJson = await getPlaylistData(userDataAndTokenList, numPlaylistsSoFar);
+    //     playlistItems = playlistJson.items;
+    //     for (i = 0; i < playlistItems.length; i++) {
+    //         playlists.push(playlistItems[i]);
+    //     };
+    // };
 
-    async function main() { 
-        var accessData = await getAuthData();
-        var userDataAndTokenList = await getUserData(accessData);
-        var playlistJson = await getPlaylistData(userDataAndTokenList, 0);
-        console.log(playlistJson)
+    // async function main() { 
+    //     var accessData = await getAuthData();
+    //     var userDataAndTokenList = await getUserData(accessData);
+    //     var playlistJson = await getPlaylistData(userDataAndTokenList, 0);
+    //     console.log(playlistJson)
 
-        numPlaylists = playlistJson.total;
-        while (playlists.length < numPlaylists) {
-            console.log('Playlists length before add: ', playlists.length)
-            await addToList(userDataAndTokenList, playlists.length);
-            console.log('Playlists length after add: ', playlists.length)
-        };
+    //     numPlaylists = playlistJson.total;
+    //     while (playlists.length < numPlaylists) {
+    //         console.log('Playlists length before add: ', playlists.length)
+    //         await addToList(userDataAndTokenList, playlists.length);
+    //         console.log('Playlists length after add: ', playlists.length)
+    //     };
 
-        for (i=0; i < playlists.length; i++) {  // sanity check for loop
-            console.log(playlists[i].name)
-        };
-        console.log('playlists length: ', playlists.length);
-    };
+    //     for (i=0; i < playlists.length; i++) {  // sanity check for loop
+    //         console.log(playlists[i].name)
+    //     };
+    //     console.log('playlists length: ', playlists.length);
+    // };
 
-    main()
+    // main()
+
+    res.sendFile('/shuffle.html', options)
 
 });
 
